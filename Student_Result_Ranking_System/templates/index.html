@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MeritBoard — Student Result Ranking</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="shell">
+  <header class="topbar">
+    <div class="brand-icon">M</div>
+    <div><div class="brand-name">MeritBoard</div><div class="brand-caption">STUDENT RESULT MANAGEMENT</div></div>
+    <div class="top-right"><span class="online-dot"></span> Local database connected</div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="eyebrow">ACADEMIC DASHBOARD / 01</div>
+      <h1>Every mark tells a story.<br><span>Make merit visible.</span></h1>
+      <p>Add student results, automatically calculate grades, and rank the class using sorting algorithms from Design and Analysis of Algorithms.</p>
+      <div class="hero-tags"><span>MERGE SORT</span><span>QUICK SORT</span><span>SQLITE DATABASE</span></div>
+    </section>
+
+    <section class="stats-grid">
+      <article class="stat-card"><div class="stat-top"><span>TOTAL STUDENTS</span><span class="stat-symbol teal">♙</span></div><strong id="totalStudents">0</strong><small>Student records saved</small></article>
+      <article class="stat-card"><div class="stat-top"><span>CLASS PASS RATE</span><span class="stat-symbol green">✓</span></div><strong id="passRate">0%</strong><small id="passCount">0 students passed</small></article>
+      <article class="stat-card"><div class="stat-top"><span>CLASS AVERAGE</span><span class="stat-symbol purple">↗</span></div><strong id="classAverage">0%</strong><small>Average percentage</small></article>
+      <article class="stat-card top-student-card"><div class="stat-top"><span>TOP PERFORMER</span><span class="stat-symbol gold">★</span></div><strong id="topStudent">—</strong><small id="topStudentMeta">Add results to see the topper</small></article>
+    </section>
+
+    <section class="main-grid">
+      <div class="panel form-panel" id="formPanel">
+        <div class="panel-heading"><div><div class="kicker">STUDENT RECORD</div><h2 id="formTitle">Add a student</h2></div><span class="form-step">01 / INPUT</span></div>
+        <form id="studentForm">
+          <input type="hidden" id="studentId">
+          <div class="field-grid">
+            <label>Roll number<input id="rollNo" required maxlength="30" placeholder="e.g. CSE024"></label>
+            <label>Student name<input id="studentName" required maxlength="100" placeholder="Full name"></label>
+            <label>Class / semester<input id="className" required maxlength="60" placeholder="e.g. TY CSE Sem V"></label>
+            <label>Department<input id="department" maxlength="60" value="CSE" placeholder="e.g. CSE"></label>
+          </div>
+          <div class="marks-heading"><div><h3>Subject marks</h3><p>Enter marks out of 100 for each subject.</p></div><span class="marks-total" id="liveTotal">Total: 0 / 500</span></div>
+          <div class="marks-grid">
+            <label>Subject 1<input type="number" id="subject1" min="0" max="100" step="0.5" required value="0"></label>
+            <label>Subject 2<input type="number" id="subject2" min="0" max="100" step="0.5" required value="0"></label>
+            <label>Subject 3<input type="number" id="subject3" min="0" max="100" step="0.5" required value="0"></label>
+            <label>Subject 4<input type="number" id="subject4" min="0" max="100" step="0.5" required value="0"></label>
+            <label>Subject 5<input type="number" id="subject5" min="0" max="100" step="0.5" required value="0"></label>
+          </div>
+          <div class="result-preview"><div><span>LIVE PERCENTAGE</span><strong id="livePercentage">0.00%</strong></div><div><span>ESTIMATED GRADE</span><strong id="liveGrade">F</strong></div><div><span>STATUS</span><strong id="liveStatus">Fail</strong></div></div>
+          <div class="form-actions"><button type="submit" class="btn btn-primary" id="saveBtn">＋ Save student result</button><button type="button" class="btn btn-secondary hidden" id="cancelEditBtn">Cancel edit</button><button type="reset" class="btn btn-ghost" id="resetBtn">Reset form</button></div>
+          <p class="form-note">Pass requires at least 35 marks in every subject. Grade rules are configurable for this demo.</p>
+        </form>
+      </div>
+
+      <aside class="panel algorithm-panel">
+        <div class="kicker">DAA LAB</div><h2>Ranking algorithm</h2>
+        <p class="muted">Choose how students should be sorted by academic performance.</p>
+        <label class="sort-option selected"><input type="radio" name="sortAlgo" value="merge" checked><span class="sort-icon merge">M</span><span class="sort-copy"><b>Merge Sort</b><small>Stable · O(n log n)</small></span><span class="radio"></span></label>
+        <label class="sort-option"><input type="radio" name="sortAlgo" value="quick"><span class="sort-icon quick">Q</span><span class="sort-copy"><b>Quick Sort</b><small>Average O(n log n)</small></span><span class="radio"></span></label>
+        <label class="sort-option"><input type="radio" name="sortAlgo" value="builtin"><span class="sort-icon builtin">Py</span><span class="sort-copy"><b>Python built-in</b><small>Baseline · Timsort</small></span><span class="radio"></span></label>
+        <button class="btn btn-primary rank-btn" id="rankBtn">↕ Rank students</button>
+        <div class="algorithm-result" id="algorithmResult">Ready to rank your student records.</div>
+        <div class="mini-info"><span>Ranking order</span><b>Percentage ↓ · Total ↓ · Roll No. ↑</b></div>
+        <button class="btn btn-secondary export-btn" id="exportBtn">↓ Export ranked data (JSON)</button>
+      </aside>
+    </section>
+
+    <section class="panel table-panel">
+      <div class="panel-heading table-heading"><div><div class="kicker">CLASS PERFORMANCE</div><h2>Student leaderboard</h2><p class="muted">Sorted by the selected algorithm. Search by name or roll number.</p></div><div class="table-tools"><input id="searchInput" placeholder="⌕ Search students…"><button class="btn btn-secondary" id="refreshBtn">Refresh ↻</button></div></div>
+      <div class="table-wrap"><table><thead><tr><th>RANK</th><th>STUDENT</th><th>ROLL NO.</th><th>CLASS</th><th>TOTAL / 500</th><th>PERCENTAGE</th><th>GRADE</th><th>STATUS</th><th>ACTIONS</th></tr></thead><tbody id="studentRows"><tr><td colspan="9" class="empty">No student results yet. Add the first student using the form above.</td></tr></tbody></table></div>
+      <div class="table-footer"><span id="tableCount">Showing 0 students</span><span>Data stored locally in SQLite</span></div>
+    </section>
+
+    <section class="bottom-grid">
+      <div class="panel history-panel"><div class="panel-heading"><div><div class="kicker">ALGORITHM BENCHMARK</div><h2>Recent ranking runs</h2></div><button class="text-btn" id="historyRefresh">Refresh ↻</button></div><div id="rankingHistory" class="history-list"><p class="empty">Ranking runs will appear here.</p></div></div>
+      <div class="panel rules-panel"><div class="kicker">RESULT RULES</div><h2>How marks become grades</h2><div class="grade-list"><div><span class="grade-pill aplus">A+</span><span>90% and above</span></div><div><span class="grade-pill a">A</span><span>80% – 89.99%</span></div><div><span class="grade-pill b">B</span><span>70% – 79.99%</span></div><div><span class="grade-pill c">C</span><span>60% – 69.99%</span></div><div><span class="grade-pill d">D</span><span>50% – 59.99%</span></div><div><span class="grade-pill e">E</span><span>Below 50%, all subjects passed</span></div><div><span class="grade-pill f">F</span><span>Failed any subject (below 35)</span></div></div></div>
+    </section>
+  </main>
+  <footer><span>MERITBOARD</span> · DAA mini-project · Flask + SQLite <span class="footer-right">Student Result Ranking System</span></footer>
+</div>
+<div id="toast" class="toast" role="status"></div>
+<script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
